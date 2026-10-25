@@ -39,6 +39,8 @@
   .purple h2{color:#23233A;opacity:.7}
   .foot{margin-top:20px;font-size:14px;color:var(--muted)}
   .photo{width:100%;height:300px;object-fit:cover;border-radius:18px;display:block}
+  #seasonalCard{padding:0;overflow:hidden}
+  #seasonalCard img{border-radius:0;height:320px}
   #lockBtn{position:fixed;right:16px;bottom:14px;opacity:.45;border:0;background:transparent;color:var(--muted);font-size:13px;cursor:pointer}
   /* gate */
   #gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:10}
@@ -80,10 +82,19 @@
 const DATA_URL = "https://docs.google.com/spreadsheets/d/180HDtvZf5ZbFb4PTiP_veXwaqcoRk6WNHg0e36pM2sM/export?format=csv";
 const GVIZ_URL = "https://docs.google.com/spreadsheets/d/180HDtvZf5ZbFb4PTiP_veXwaqcoRk6WNHg0e36pM2sM/gviz/tq?tqx=out:json&sheet=Sheet1";
 const SALT_HEX = "46a7d3c19e824b5f8c03a61d2f9e47b0";
-const PALETTES = [
-  {bg:"#F3EDE2",card:"#FCFAF5",ink:"#1A3636",muted:"#677D6A",accent:"#677D6A",accent2:"#B4654A",accentInk:"#fff"},
-  {bg:"#141414",card:"#1F1F1F",ink:"#F2F0FA",muted:"#9a93ad",accent:"#8B7BD8",accent2:"#B9F36B",accentInk:"#23233A"},
-  {bg:"#F2F0FA",card:"#FFFFFF",ink:"#23233A",muted:"#6d6a8a",accent:"#8B7BD8",accent2:"#B9F36B",accentInk:"#23233A"},
+const MONTH_PALETTES = [
+  {bg:"#EAF1F5",card:"#FFFFFF",ink:"#1E2A33",muted:"#5A6D7A",accent:"#4A7FA5",accent2:"#B8C9D4",accentInk:"#fff"},
+  {bg:"#F7ECEE",card:"#FFFBFC",ink:"#33202A",muted:"#8A5A6A",accent:"#B65A7A",accent2:"#E3B7C2",accentInk:"#fff"},
+  {bg:"#EDF3E6",card:"#FCFDF8",ink:"#22331C",muted:"#5F7A52",accent:"#7BA75E",accent2:"#C9D9A8",accentInk:"#23233A"},
+  {bg:"#F2EFE6",card:"#FFFDF8",ink:"#2A2A22",muted:"#7A7A5E",accent:"#9DBE7A",accent2:"#F2C94C",accentInk:"#23233A"},
+  {bg:"#F7ECEC",card:"#FFFBFB",ink:"#33202A",muted:"#8A5A6A",accent:"#E08FA9",accent2:"#F2C4D0",accentInk:"#33202A"},
+  {bg:"#FDF6DD",card:"#FFFEF5",ink:"#332A10",muted:"#8A7A44",accent:"#E8C547",accent2:"#F2E2A0",accentInk:"#332A10"},
+  {bg:"#FDF0DD",card:"#FFFBF2",ink:"#33200F",muted:"#8A5E33",accent:"#E8873D",accent2:"#F2C09A",accentInk:"#33200F"},
+  {bg:"#FDF3DC",card:"#FFFBF2",ink:"#332A10",muted:"#8A6E33",accent:"#D9A441",accent2:"#F0D49A",accentInk:"#332A10"},
+  {bg:"#F7ECDC",card:"#FFFBF2",ink:"#33200F",muted:"#8A5E33",accent:"#B4662A",accent2:"#D9A06A",accentInk:"#fff"},
+  {bg:"#F7EEDD",card:"#FFFBF2",ink:"#3B2314",muted:"#8A5A33",accent:"#C2571B",accent2:"#E0A06A",accentInk:"#fff"},
+  {bg:"#F3EAD9",card:"#FBF6EC",ink:"#2E1E10",muted:"#7A5A33",accent:"#7A4A21",accent2:"#C9A06A",accentInk:"#fff"},
+  {bg:"#EAF0EB",card:"#F7FAF7",ink:"#1E2A22",muted:"#5A6D5E",accent:"#2F5D50",accent2:"#9AB8AC",accentInk:"#fff"},
 ];
 const $ = s => document.querySelector(s);
 function hexToBytes(h){const b=new Uint8Array(h.length/2);for(let i=0;i<b.length;i++)b[i]=parseInt(h.substr(i*2,2),16);return b;}
@@ -137,18 +148,32 @@ function card(title, inner, cls){
 function rows(items){
   return items.map(it=>`<div class="row"><span class="t">${esc(it.title)}</span><span class="s">${esc(it.sub||"")}</span></div>`).join("");
 }
+async function loadSeasonal(){
+  const el = document.getElementById("seasonalCard");
+  const img = document.getElementById("seasonalImg");
+  if(!el || !img) return;
+  try{
+    const res = await fetch("seasonal/manifest.json", {cache:"no-store"});
+    if(!res.ok) throw new Error("no manifest");
+    const m = await res.json();
+    const now = new Date();
+    const key = now.toLocaleString("en-US", {month:"long"}).toLowerCase();
+    const list = m[key] || [];
+    if(!list.length) throw new Error("empty");
+    img.src = list[now.getDate() % list.length];
+  }catch(e){ el.style.display = "none"; }
+}
 function render(d){
-  // daily palette rotation
+  // monthly seasonal palette
   const now = new Date();
-  const doy = Math.floor((now - new Date(now.getFullYear(),0,0)) / 86400000);
-  const p = PALETTES[doy % PALETTES.length];
+  const p = MONTH_PALETTES[now.getMonth()];
   const r = document.documentElement.style;
   r.setProperty("--bg",p.bg); r.setProperty("--card",p.card); r.setProperty("--ink",p.ink);
   r.setProperty("--muted",p.muted); r.setProperty("--accent",p.accent); r.setProperty("--accent2",p.accent2);
   r.setProperty("--accent-ink",p.accentInk);
 
   $("#titleDay").textContent = d.today && d.today.label ? d.today.label : "Today";
-  let html = "";
+  let html = '<div class="card wide" id="seasonalCard"><img id="seasonalImg" class="photo" src="" alt=""></div>';
   if(d.today && d.today.nextEvent){
     html += `<div class="card hero"><h2>Up next</h2><div class="big">${esc(d.today.nextEvent.title)}</div><div class="sub">${esc(d.today.nextEvent.sub||"")}</div></div>`;
   }
@@ -209,6 +234,7 @@ function render(d){
     const g = new Date(d.generatedAt);
     $("#foot").textContent = "Updated " + g.toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"});
   }
+  loadSeasonal();
 }
 function tickClock(){
   const n = new Date();
