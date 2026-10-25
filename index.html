@@ -161,6 +161,7 @@ async function loadSeasonal(){
     const list = m[key] || [];
     if(!list.length) throw new Error("empty");
     img.src = list[now.getDate() % list.length];
+    el.style.display = "";
   }catch(e){ el.style.display = "none"; }
 }
 function wxArt(cond, small){
@@ -199,7 +200,7 @@ function render(d){
   r.setProperty("--muted",p.muted); r.setProperty("--accent",p.accent); r.setProperty("--accent2",p.accent2);
   r.setProperty("--accent-ink",p.accentInk);
 
-  let html = '<div class="card wide" id="seasonalCard"><img id="seasonalImg" class="photo" src="" alt="" onerror="this.closest(\'.card\').style.display=\'none\'"></div>';
+  let html = '<div class="card wide" id="seasonalCard" style="display:none"><img id="seasonalImg" class="photo" alt="" onerror="this.closest(\'.card\').style.display=\'none\'"></div>';
   html += `<div class="card"><h2>${esc(d.today && d.today.label ? d.today.label : "Today")}</h2><div class="big"><span id="clockTime"></span></div><div class="med" id="clockDate"></div></div>`;
   {
     let heroTitle = null, heroSub = "", heroLabel = "Up next";
