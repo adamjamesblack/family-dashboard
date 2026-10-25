@@ -77,6 +77,7 @@
    DATA_URL is filled in at deploy time. The blob is JSON:
    {"v":1,"iv":"base64","data":"base64"}  (AES-GCM, key = PBKDF2(passcode)). */
 const DATA_URL = "https://docs.google.com/spreadsheets/d/180HDtvZf5ZbFb4PTiP_veXwaqcoRk6WNHg0e36pM2sM/export?format=csv";
+const GVIZ_URL = "https://docs.google.com/spreadsheets/d/180HDtvZf5ZbFb4PTiP_veXwaqcoRk6WNHg0e36pM2sM/gviz/tq?tqx=out:json&sheet=Sheet1";
 const SALT_HEX = "46a7d3c19e824b5f8c03a61d2f9e47b0";
 const PALETTES = [
   {bg:"#F3EDE2",card:"#FCFAF5",ink:"#1A3636",muted:"#677D6A",accent:"#677D6A",accent2:"#B4654A"},
@@ -99,12 +100,34 @@ function dequoteCsv(t){
   if(t.length >= 2 && t[0] === '"' && t[t.length-1] === '"') t = t.slice(1,-1).replace(/""/g,'"');
   return t.trim();
 }
+async function fetchBlobText(){
+  try{
+    const res = await fetch(DATA_URL, {cache:"no-store"});
+    if(res.ok) return dequoteCsv(await res.text());
+  }catch(e){}
+  const res = await fetch(GVIZ_URL, {cache:"no-store"});
+  if(!res.ok) throw new Error("data fetch failed");
+  const txt = await res.text();
+  const json = JSON.parse(txt.substring(txt.indexOf("{"), txt.lastIndexOf("}") + 1));
+  const v = json.table.rows[0].c[0].v;
+  if(!v) throw new Error("data fetch failed");
+  return v;
+}
 async function loadBoard(code){
   const key = await deriveKey(code);
-  const res = await fetch(DATA_URL, {cache:"no-store"});
-  if(!res.ok) throw new Error("data fetch failed");
-  const blob = JSON.parse(dequoteCsv(await res.text()));
-  const plain = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64ToBytes(blob.iv)}, key, b64ToBytes(blob.data));
+  let blobText;
+  try{
+    blobText = await fetchBlobText();
+  }catch(e){
+    const err = new Error("fetch failed"); err.kind = "fetch"; throw err;
+  }
+  const blob = JSON.parse(blobText);
+  let plain;
+  try{
+    plain = await crypto.subtle.decrypt({name:"AES-GCM", iv:b64ToBytes(blob.iv)}, key, b64ToBytes(blob.data));
+  }catch(e){
+    const err = new Error("decrypt failed"); err.kind = "decrypt"; throw err;
+  }
   return JSON.parse(new TextDecoder().decode(plain));
 }
 function card(title, inner, cls){
@@ -203,7 +226,9 @@ async function unlock(code){
       try{ render(await loadBoard(localStorage.getItem("famdash_code"))); }catch(e){}
     }, 60*60*1000);
   }catch(e){
-    $("#gateErr").textContent = "That passcode didn't work. Try again.";
+    $("#gateErr").textContent = e && e.kind === "fetch"
+      ? "Couldn't reach the data — check the connection and try again."
+      : "That passcode didn't work. Try again.";
     $("#status").textContent = "";
     localStorage.removeItem("famdash_code");
   }
