@@ -201,8 +201,12 @@ function render(d){
 
   let html = '<div class="card wide" id="seasonalCard"><img id="seasonalImg" class="photo" src="" alt="" onerror="this.closest(\'.card\').style.display=\'none\'"></div>';
   html += `<div class="card"><h2>${esc(d.today && d.today.label ? d.today.label : "Today")}</h2><div class="big"><span id="clockTime"></span></div><div class="med" id="clockDate"></div></div>`;
-  if(d.today && d.today.nextEvent){
-    html += `<div class="card hero"><h2>Up next</h2><div class="big">${esc(d.today.nextEvent.title)}</div><div class="sub">${esc(d.today.nextEvent.sub||"")}</div></div>`;
+  {
+    let heroTitle = null, heroSub = "", heroLabel = "Up next";
+    if(d.today && d.today.nextEvent){ heroTitle = d.today.nextEvent.title; heroSub = d.today.nextEvent.sub||""; }
+    else if(d.tomorrow && d.tomorrow.length){ heroTitle = d.tomorrow[0].title; heroSub = d.tomorrow[0].sub||""; heroLabel = "Tomorrow"; }
+    else { heroTitle = d.today && d.today.label ? d.today.label : "Today"; heroSub = "Nothing on the calendar"; heroLabel = "Today"; }
+    html += `<div class="card hero"><h2>${esc(heroLabel)}</h2><div class="big">${esc(heroTitle)}</div>${heroSub ? `<div class="sub">${esc(heroSub)}</div>` : ""}</div>`;
   }
   if(d.photo){
     html += card("Family", `<img class="photo tall" src="${esc(d.photo)}" alt="Family photo" onerror="this.closest('.card').style.display='none'">`);
