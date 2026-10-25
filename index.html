@@ -9,7 +9,7 @@
 <style>
   :root{
     --bg:#F3EDE2; --card:#FCFAF5; --ink:#1A3636; --muted:#677D6A;
-    --accent:#677D6A; --accent2:#B4654A; --lime:#B9F36B; --purple:#8B7BD8;
+    --accent:#677D6A; --accent2:#B4654A; --lime:#B9F36B; --purple:#8B7BD8; --accent-ink:#fff;
   }
   body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   .wrap{max-width:1780px;margin:0 auto;padding:28px 34px 40px}
@@ -26,8 +26,8 @@
   .row:last-child{border-bottom:0}
   .row .t{font-weight:700;font-size:19px}
   .row .s{color:var(--muted);font-size:16px;text-align:right}
-  .hero{grid-column:span 2;grid-row:span 2;background:var(--accent);color:#fff}
-  .hero h2{color:rgba(255,255,255,.75)}
+  .hero{grid-column:span 2;grid-row:span 2;background:var(--accent);color:var(--accent-ink)}
+  .hero h2{color:var(--accent-ink);opacity:.75}
   .hero .big{font-size:76px}
   .hero .sub{font-size:24px;margin-top:8px;opacity:.92}
   .wide{grid-column:span 2}
@@ -35,8 +35,8 @@
   .accent h2{color:rgba(255,255,255,.8)}
   .lime{background:var(--lime);color:#1C4A1E}
   .lime h2{color:#3d6b35}
-  .purple{background:var(--purple);color:#fff}
-  .purple h2{color:rgba(255,255,255,.8)}
+  .purple{background:var(--purple);color:#23233A}
+  .purple h2{color:#23233A;opacity:.7}
   .foot{margin-top:20px;font-size:14px;color:var(--muted)}
   #lockBtn{position:fixed;right:16px;bottom:14px;opacity:.45;border:0;background:transparent;color:var(--muted);font-size:13px;cursor:pointer}
   /* gate */
@@ -80,9 +80,9 @@ const DATA_URL = "https://docs.google.com/spreadsheets/d/180HDtvZf5ZbFb4PTiP_veX
 const GVIZ_URL = "https://docs.google.com/spreadsheets/d/180HDtvZf5ZbFb4PTiP_veXwaqcoRk6WNHg0e36pM2sM/gviz/tq?tqx=out:json&sheet=Sheet1";
 const SALT_HEX = "46a7d3c19e824b5f8c03a61d2f9e47b0";
 const PALETTES = [
-  {bg:"#F3EDE2",card:"#FCFAF5",ink:"#1A3636",muted:"#677D6A",accent:"#677D6A",accent2:"#B4654A"},
-  {bg:"#141414",card:"#1F1F1F",ink:"#F2F0FA",muted:"#9a93ad",accent:"#8B7BD8",accent2:"#B9F36B"},
-  {bg:"#F2F0FA",card:"#FFFFFF",ink:"#23233A",muted:"#6d6a8a",accent:"#8B7BD8",accent2:"#B9F36B"},
+  {bg:"#F3EDE2",card:"#FCFAF5",ink:"#1A3636",muted:"#677D6A",accent:"#677D6A",accent2:"#B4654A",accentInk:"#fff"},
+  {bg:"#141414",card:"#1F1F1F",ink:"#F2F0FA",muted:"#9a93ad",accent:"#8B7BD8",accent2:"#B9F36B",accentInk:"#23233A"},
+  {bg:"#F2F0FA",card:"#FFFFFF",ink:"#23233A",muted:"#6d6a8a",accent:"#8B7BD8",accent2:"#B9F36B",accentInk:"#23233A"},
 ];
 const $ = s => document.querySelector(s);
 function hexToBytes(h){const b=new Uint8Array(h.length/2);for(let i=0;i<b.length;i++)b[i]=parseInt(h.substr(i*2,2),16);return b;}
@@ -144,6 +144,7 @@ function render(d){
   const r = document.documentElement.style;
   r.setProperty("--bg",p.bg); r.setProperty("--card",p.card); r.setProperty("--ink",p.ink);
   r.setProperty("--muted",p.muted); r.setProperty("--accent",p.accent); r.setProperty("--accent2",p.accent2);
+  r.setProperty("--accent-ink",p.accentInk);
 
   $("#titleDay").textContent = d.today && d.today.label ? d.today.label : "Today";
   let html = "";
