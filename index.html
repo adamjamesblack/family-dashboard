@@ -38,6 +38,7 @@
   .purple{background:var(--purple);color:#23233A}
   .purple h2{color:#23233A;opacity:.7}
   .foot{margin-top:20px;font-size:14px;color:var(--muted)}
+  .photo{width:100%;height:300px;object-fit:cover;border-radius:18px;display:block}
   #lockBtn{position:fixed;right:16px;bottom:14px;opacity:.45;border:0;background:transparent;color:var(--muted);font-size:13px;cursor:pointer}
   /* gate */
   #gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:10}
@@ -199,6 +200,9 @@ function render(d){
   }
   if(d.plan){
     html += card("Tonight's plan", `<div class="med">${esc(d.plan)}</div>`, "purple");
+  }
+  if(d.photo){
+    html += card("Family", `<img class="photo" src="${esc(d.photo)}" alt="Family photo">`, "wide");
   }
   $("#grid").innerHTML = html || card("Board", `<div class="med">No data yet — check back after the next refresh.</div>`);
   if(d.generatedAt){
