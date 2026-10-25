@@ -18,7 +18,7 @@
   h1{font-family:Fraunces,serif;font-size:clamp(30px,3.2vw,46px);margin:0;line-height:1.05}
   .clock{font-size:clamp(16px,1.6vw,22px);font-weight:700;text-align:right}
   .clock small{display:block;font-size:clamp(12px,1.1vw,15px);color:var(--muted);font-weight:500}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(0,1fr);grid-auto-flow:dense;gap:clamp(10px,1.2vw,18px);flex:1;min-height:0}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;grid-auto-flow:dense;gap:clamp(10px,1.2vw,18px);flex:1;min-height:0;align-content:start}
   .card{background:var(--card);border-radius:26px;padding:clamp(14px,1.6vh,22px) clamp(16px,1.6vw,24px);overflow:hidden;display:flex;flex-direction:column;min-height:0}
   .card h2{font-size:clamp(11px,1vw,14px);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:800;flex-shrink:0}
   .big{font-family:Fraunces,serif;font-size:clamp(34px,4vw,52px);line-height:1.02}
@@ -27,7 +27,7 @@
   .row:last-child{border-bottom:0}
   .row .t{font-weight:700;font-size:clamp(14px,1.25vw,19px)}
   .row .s{color:var(--muted);font-size:clamp(12px,1.1vw,16px);text-align:right}
-  .hero{grid-column:span 2;grid-row:span 2;background:var(--accent);color:var(--accent-ink)}
+  .hero{grid-column:span 2;grid-row:span 2;background:var(--accent);color:var(--accent-ink);justify-content:center}
   .hero h2{color:var(--accent-ink);opacity:.75}
   .hero .big{font-size:clamp(44px,5.5vw,76px)}
   .hero .sub{font-size:24px;margin-top:8px;opacity:.92}
@@ -39,7 +39,14 @@
   .purple{background:var(--purple);color:#23233A}
   .purple h2{color:#23233A;opacity:.7}
   .foot{margin-top:16px;font-size:14px;color:var(--muted);flex-shrink:0}
-  .photo{width:100%;flex:1;min-height:0;object-fit:cover;border-radius:18px;display:block}
+  .photo{width:100%;height:300px;object-fit:cover;border-radius:18px;display:block}
+  .photo.tall{height:460px}
+  .wx-art{width:100%;height:110px;display:block}
+  .wx-art.sm{height:80px}
+  .bar{height:10px;border-radius:99px;background:rgba(0,0,0,.14);overflow:hidden;margin-top:12px}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .with-ico{display:inline-flex;align-items:center;gap:8px}
+  .with-ico svg{width:20px;height:20px;flex-shrink:0;color:var(--muted)}
   #seasonalCard{padding:0;overflow:hidden}
   #seasonalCard img{border-radius:0}
   #lockBtn{position:fixed;right:16px;bottom:14px;opacity:.45;border:0;background:transparent;color:var(--muted);font-size:13px;cursor:pointer}
@@ -164,6 +171,33 @@ async function loadSeasonal(){
     img.src = list[now.getDate() % list.length];
   }catch(e){ el.style.display = "none"; }
 }
+function wxArt(cond, small){
+  const c = (cond||"").toLowerCase();
+  const sun = '<circle cx="52" cy="48" r="26" fill="#E8A33D"/><g stroke="#E8A33D" stroke-width="5" stroke-linecap="round"><line x1="52" y1="6" x2="52" y2="16"/><line x1="52" y1="80" x2="52" y2="90"/><line x1="10" y1="48" x2="20" y2="48"/><line x1="84" y1="48" x2="94" y2="48"/><line x1="22" y1="18" x2="29" y2="25"/><line x1="75" y1="71" x2="82" y2="78"/><line x1="82" y1="18" x2="75" y2="25"/><line x1="29" y1="71" x2="22" y2="78"/></g>';
+  const cloud = '<g fill="#ffffff" stroke="#E5DDD0" stroke-width="2"><ellipse cx="62" cy="66" rx="30" ry="18"/><ellipse cx="86" cy="58" rx="24" ry="16"/><ellipse cx="42" cy="58" rx="18" ry="12"/></g>';
+  const rain = '<g stroke="#7FB3D5" stroke-width="4" stroke-linecap="round"><line x1="52" y1="88" x2="48" y2="100"/><line x1="70" y1="88" x2="66" y2="100"/><line x1="88" y1="88" x2="84" y2="100"/></g>';
+  const snow = '<g fill="#BFD9E8"><circle cx="50" cy="92" r="4"/><circle cx="68" cy="92" r="4"/><circle cx="86" cy="92" r="4"/></g>';
+  let inner = sun + cloud;
+  if(c.includes("rain")||c.includes("shower")||c.includes("storm")) inner = cloud + rain;
+  else if(c.includes("snow")) inner = cloud + snow;
+  else if(c.includes("clear")||c.includes("sun")) inner = sun;
+  return `<svg class="wx-art${small ? " sm" : ""}" viewBox="0 0 104 108" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(cond||"")}">${inner}</svg>`;
+}
+function sunArc(){
+  return `<svg class="wx-art" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg"><path d="M10 90 A 90 90 0 0 1 190 90" fill="none" stroke="#E8A33D" stroke-width="3" stroke-dasharray="1 7" stroke-linecap="round"/><line x1="4" y1="90" x2="196" y2="90" stroke="#C9BBA6" stroke-width="2"/><circle cx="100" cy="14" r="13" fill="#E8A33D"/></svg>`;
+}
+function moneyNum(s){ const n = parseFloat(String(s||"").replace(/[^0-9.]/g,"")); return isNaN(n) ? null : n; }
+function budgetBar(b){
+  const left = moneyNum(b.left), of = moneyNum(b.of);
+  if(left === null || of === null || of <= 0) return "";
+  const pct = Math.max(0, Math.min(100, Math.round((1 - left / of) * 100)));
+  return `<div class="bar"><i style="width:${pct}%"></i></div><div style="color:var(--muted);margin-top:8px">${pct}% spent</div>`;
+}
+const ICO = {
+  steps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="17" r="2.5"/><circle cx="17" cy="7" r="2.5"/><path d="M9.5 15 L14.5 9"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 13A8 8 0 1 1 11 4a6.5 6.5 0 0 0 9 9z"/></svg>',
+  weight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v3"/><path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 13h6"/></svg>'
+};
 function render(d){
   // monthly seasonal palette
   const now = new Date();
@@ -178,6 +212,9 @@ function render(d){
   if(d.today && d.today.nextEvent){
     html += `<div class="card hero"><h2>Up next</h2><div class="big">${esc(d.today.nextEvent.title)}</div><div class="sub">${esc(d.today.nextEvent.sub||"")}</div></div>`;
   }
+  if(d.photo){
+    html += card("Family", `<img class="photo tall" src="${esc(d.photo)}" alt="Family photo" onerror="this.closest('.card').style.display='none'">`);
+  }
   if(d.schedule && d.schedule.length){
     html += card("Today's schedule", rows(d.schedule), "wide");
   }
@@ -186,14 +223,14 @@ function render(d){
   }
   if(d.weather && d.weather.today){
     const w = d.weather.today;
-    html += card("Weather today", `<div class="big">${esc(w.high)}° / ${esc(w.low)}°</div><div class="med">${esc(w.cond||"")}</div><div class="s" style="color:var(--muted);margin-top:6px">Rain ${esc(w.rain||"—")}</div>`);
+    html += card("Weather today", `${wxArt(w.cond)}<div class="big">${esc(w.high)}° / ${esc(w.low)}°</div><div class="med">${esc(w.cond||"")}</div><div class="s" style="color:var(--muted);margin-top:6px">Rain ${esc(w.rain||"—")}</div>`);
   }
   if(d.weather && d.weather.weekend){
     const w = d.weather.weekend;
-    html += card("Weekend weather", `<div class="med">${esc(w.label||"Weekend")}</div><div class="big">${esc(w.high)}° / ${esc(w.low)}°</div><div style="color:var(--muted)">Rain ${esc(w.rain||"—")}</div>`);
+    html += card("Weekend weather", `${wxArt(w.cond, true)}<div class="med">${esc(w.label||"Weekend")}</div><div class="big">${esc(w.high)}° / ${esc(w.low)}°</div><div style="color:var(--muted)">Rain ${esc(w.rain||"—")}</div>`);
   }
   if(d.sunset){
-    html += card("Sunset", `<div class="big">${esc(d.sunset)}</div>`);
+    html += card("Sunset", `${sunArc()}<div class="big">${esc(d.sunset)}</div>`);
   }
   if(d.dinner){
     html += card("Tonight's dinner", `<div class="med">${esc(d.dinner)}</div>`, "lime");
@@ -216,19 +253,16 @@ function render(d){
   }
   if(d.health){
     let inner = "";
-    if(d.health.steps) inner += `<div class="row"><span class="t">Steps</span><span class="s">${esc(d.health.steps)}</span></div>`;
-    if(d.health.sleep) inner += `<div class="row"><span class="t">Sleep</span><span class="s">${esc(d.health.sleep)}</span></div>`;
-    if(d.health.weight) inner += `<div class="row"><span class="t">Weight</span><span class="s">${esc(d.health.weight)}</span></div>`;
+    if(d.health.steps) inner += `<div class="row"><span class="t with-ico">${ICO.steps}Steps</span><span class="s">${esc(d.health.steps)}</span></div>`;
+    if(d.health.sleep) inner += `<div class="row"><span class="t with-ico">${ICO.moon}Sleep</span><span class="s">${esc(d.health.sleep)}</span></div>`;
+    if(d.health.weight) inner += `<div class="row"><span class="t with-ico">${ICO.weight}Weight</span><span class="s">${esc(d.health.weight)}</span></div>`;
     if(inner) html += card("Health", inner);
   }
   if(d.budget){
-    html += card("Budget", `<div class="big">${esc(d.budget.left)} left</div><div style="color:var(--muted)">of ${esc(d.budget.of)} this month</div>`, "lime");
+    html += card("Budget", `<div class="big">${esc(d.budget.left)} left</div><div style="color:var(--muted)">of ${esc(d.budget.of)} this month</div>${budgetBar(d.budget)}`, "lime");
   }
   if(d.plan){
     html += card("Tonight's plan", `<div class="med">${esc(d.plan)}</div>`, "purple");
-  }
-  if(d.photo){
-    html += card("Family", `<img class="photo" src="${esc(d.photo)}" alt="Family photo" onerror="this.closest('.card').style.display='none'">`, "wide");
   }
   $("#grid").innerHTML = html || card("Board", `<div class="med">No data yet — check back after the next refresh.</div>`);
   if(d.generatedAt){
